@@ -108,6 +108,11 @@ def create_labelled_data(blob):
 
     filename = blob.replace('/', '_').split('.')[0] + '_ds_5'
     event_path = os.path.join(EVENTS_CACHE_PATH, 'RawLabelledData')
+
+    # Ensure path exists
+    if not os.path.exists(event_path):
+        os.makedirs(event_path)
+
     with open(event_path + '/' + filename + '_data.npy', 'wb') as f:
         np.save(f, data[::5,:])
     with open(event_path + '/' + filename + '_labels.npy', 'wb') as f:
