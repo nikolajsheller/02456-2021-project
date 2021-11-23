@@ -23,8 +23,17 @@ channel = 4
 data_chunk = data[:,channel]
 labels_chunk = labels[:,channel]
 
-fig, (ax1, ax2) = plt.subplots(2)
-fig.suptitle('Sample data vs label data')
-ax1.plot(data_chunk)
-ax2.plot(labels_chunk)
+fig, ax1 = plt.subplots()
+color = 'tab:blue'
+ax1.set_ylabel('data', color=color)
+ax1.plot(data_chunk, color=color)
+ax1.tick_params(axis='y', color=color)
+
+ax2 = ax1.twinx()
+
+color = 'tab:red'
+ax2.set_ylabel('labelled', color=color)
+ax2.plot(labels_chunk, color=color)
+ax2.tick_params(axis='y', color=color)
+
 plt.show()
