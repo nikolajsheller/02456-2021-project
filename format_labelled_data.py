@@ -23,7 +23,7 @@ window_res = 10
 step_interval = 1
 window_size = 2
 erosion_mask_length = 10
-expand_dist = 0
+expand_dist = 600
 hard_threshold = 5
 saturation_threshold = 30000
 
@@ -37,6 +37,9 @@ tools.get_instrument_info()
 
 # %%
 fp.get_session(sessionid=686)
+
+# %%
+fp.get_session(labelled=True)
 
 # %%
 measurements = fp.dbquery('select * from measurement where sessionid=686')
@@ -99,6 +102,10 @@ def create_labelled_data(blob):
         return
 
     for i, m_id in enumerate(_meas['Id'].tolist()):
+        if start_inds[i] > stop_inds[i]:
+            print('start lower than stop, continueing...')
+            continue
+
         if m_id in insects['MeasurementId'].tolist():
             _insects = insects[insects['MeasurementId'] == m_id]
 
@@ -106,16 +113,12 @@ def create_labelled_data(blob):
                 if (channels[c] in _insects['SegmentId'].tolist()):
                     labels[start_inds[i]:stop_inds[i],c] = 1
 
-    filename = blob.replace('/', '_').split('.')[0] + '_ds_5'
+    filename = blob.replace('/', '_').split('.')[0] + '_ds_1'
     event_path = os.path.join(EVENTS_CACHE_PATH, 'RawLabelledData')
-
-    # Ensure path exists
-    os.makedirs(event_path, exist_ok=True)
-
     with open(event_path + '/' + filename + '_data.npy', 'wb') as f:
-        np.save(f, data[::5,:])
+        np.save(f, data[:,:])
     with open(event_path + '/' + filename + '_labels.npy', 'wb') as f:
-        np.save(f, labels[::5,:])
+        np.save(f, labels[:,:])
     return data, times, labels, start_inds, stop_inds, _meas
 
 # %% [markdown]
@@ -152,11 +155,20 @@ for c in range(0,8):
 plt.legend()
 
 # %%
+start_inds[0]
+
+# %%
+plt.figure(figsize=(25,5))
+for c in range(0,8):
+    plt.plot(data[1451375:1800000,c], label=str(channels[c]), color=colors[c])
+plt.legend()
+
+# %%
 ax = [None]*8
 fig, ((ax[0], ax[1], ax[2], ax[3]), (ax[4], ax[5], ax[6], ax[7])) = plt.subplots(nrows=2, ncols=4, sharey=True)
-fig.set_figwidth(15)
+fig.set_figwidth(25)
 for c in range(0,8):
-    ax[c].plot(labels[start_inds[0]:stop_inds[0],c], label=str(channels[c]), color=colors[c])
+    ax[c].plot(labels[1451375:1800000,c], label=str(channels[c]), color=colors[c])
     ax[c].legend()
 plt.show()
 
@@ -170,7 +182,7 @@ for m_id in _meas['Id'].tolist()[0:1]:
 # # Run for all - THIS WILL TAKE A WHILE
 
 # %%
-if True:
+if False:
     for blob in blob_list:
         create_labelled_data(blob)
 
@@ -178,9 +190,10 @@ if True:
 # # Run for all dates - THIS WILL TAKE FOREVER
 
 # %%
-if False:
-    dates = measurements['DateId'].unique().tolist()
-    for date in dates:
+if True:
+    dates = measurements['DateId'].sort_values().unique().tolist()
+    for date in dates[0:7]:
+        print(date)
         path=RAWDATA_CACHE_PATH
         blob_mgr = BlobManager(configuration='rclone')
         blob_list = blob_mgr.list_blobs(container='scouts', subdir=f"{mac}/{str(date)}/raw/")
@@ -189,5 +202,7 @@ if False:
 
         for blob in blob_list:
             create_labelled_data(blob)
+            os.remove(os.path.join(RAWDATA_CACHE_PATH, blob.replace('/', '_').split('.')[0] + '.raw.gz'))
+
 
 
