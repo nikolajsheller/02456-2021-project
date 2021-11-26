@@ -113,12 +113,12 @@ def create_labelled_data(blob):
                 if (channels[c] in _insects['SegmentId'].tolist()):
                     labels[start_inds[i]:stop_inds[i],c] = 1
 
-    filename = blob.replace('/', '_').split('.')[0] + '_ds_1'
+    filename = blob.replace('/', '_').split('.')[0] + '_ds_5'
     event_path = os.path.join(EVENTS_CACHE_PATH, 'RawLabelledData')
     with open(event_path + '/' + filename + '_data.npy', 'wb') as f:
-        np.save(f, data[:,:])
+        np.save(f, data[::5,:])
     with open(event_path + '/' + filename + '_labels.npy', 'wb') as f:
-        np.save(f, labels[:,:])
+        np.save(f, labels[::5,:])
     return data, times, labels, start_inds, stop_inds, _meas
 
 # %% [markdown]
