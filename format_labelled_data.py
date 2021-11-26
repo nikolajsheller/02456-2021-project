@@ -2,6 +2,8 @@
 # # Import
 
 # %%
+import os.path
+
 import fpmodules as fp
 import pandas as pd
 from evex_scout import *
@@ -201,8 +203,12 @@ if True:
         print('Number of raw data files:', len(blob_list))
 
         for blob in blob_list:
+            text_file = os.path.join(RAWDATA_CACHE_PATH, blob.replace('/', '_').split('.')[0] + '.txt')
+            if os.path.exists(text_file):
+                continue
             create_labelled_data(blob)
             os.remove(os.path.join(RAWDATA_CACHE_PATH, blob.replace('/', '_').split('.')[0] + '.raw.gz'))
-
+            with open(text_file,"w") as variable_name:
+                variable_name.write('Test')
 
 
