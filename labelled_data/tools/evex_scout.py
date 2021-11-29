@@ -21,7 +21,7 @@ import numpy as np
 
 if os.getcwd() not in sys.path: # To avoid import madness
     sys.path.append(os.getcwd())
-from evex_calc import log, remove_rolling_mean, threshold, label_events, extract_events, data_type, filter_events
+from .evex_calc import log, remove_rolling_mean, threshold, label_events, extract_events, data_type, filter_events
 
 #%% I/O functions
 def get_external_arguments():
