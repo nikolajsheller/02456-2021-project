@@ -90,9 +90,9 @@ def create_labelled_data(blob, chunks=True, ds=5):
     print('Saving files')
     filename = blob.replace('/', '_').split('.')[0] + '_ds_' + str(ds)
     if chunks:
-        save_chunks(filename, measurements, insects, data, start_inds, stop_inds)
+        save_chunks(filename, _meas, insects, data, start_inds, stop_inds)
     else:
-        save_raw_data(filename, measurements, insects, data, start_inds, stop_inds)
+        save_raw_data(filename, _meas, insects, data, start_inds, stop_inds)
 
     return
 
@@ -102,14 +102,12 @@ def save_chunks(filename, measurements, insects, data, start_inds, stop_inds):
         if start_inds[i] > stop_inds[i]:
             print('start lower than stop, continueing...')
             continue
-
-        
+        event = data[start_inds[i]:stop_inds[i], :]
+        labels = np.zeros_like(event)
         # process insect
         if m_id in insects['MeasurementId'].tolist():
             # Find insects
             _insects = insects[insects['MeasurementId'] == m_id]
-            event = data[start_inds[i]:stop_inds[i], :]
-            labels = np.zeros_like(event)
             for c in range(0, 8):
                 if channels[c] in _insects['SegmentId'].tolist():
                     labels[:, c] = 1
