@@ -64,7 +64,7 @@ def create_labelled_data(blob, chunks=True, ds=5):
     # Get files from blob storage
     blob_mgr = BlobManager(configuration='rclone')
     file_list = blob_mgr.download_blobs([blob], RAWDATA_CACHE_PATH, container='scouts')
-    data, times = load_data_from_files(file_list, RAWDATA_CACHE_PATH, ds=ds)
+    data, times = load_data_from_files(file_list, RAWDATA_CACHE_PATH)
     if len(data) == 0:
         return
 
@@ -90,14 +90,18 @@ def create_labelled_data(blob, chunks=True, ds=5):
     print('Saving files')
     filename = blob.replace('/', '_').split('.')[0] + '_ds_' + str(ds)
     if chunks:
-        save_chunks(filename, _meas, insects, data, start_inds, stop_inds)
+        save_chunks(filename, _meas, insects, data, start_inds, stop_inds, ds=ds)
     else:
-        save_raw_data(filename, _meas, insects, data, start_inds, stop_inds)
+        save_raw_data(filename, _meas, insects, data, start_inds, stop_inds, ds=ds)
 
     return
 
 
-def save_chunks(filename, measurements, insects, data, start_inds, stop_inds):
+def save_chunks(filename, measurements, insects, data, start_inds, stop_inds, ds):
+    print(len(start_inds))
+    print(len(stop_inds))
+    print(len(measurements))
+
     for i, m_id in enumerate(measurements['Id'].tolist()):
         if start_inds[i] > stop_inds[i]:
             print('start lower than stop, continueing...')
@@ -113,14 +117,14 @@ def save_chunks(filename, measurements, insects, data, start_inds, stop_inds):
                     labels[:, c] = 1
 
             # save insect
-            save_data('insects', filename, event, labels)
+            save_data('insects', filename, event[::ds], labels[::ds])
 
         # save noise
         else:
-            save_data('noise', filename, event, labels)
+            save_data('noise', filename, event[::ds], labels[::ds])
 
 
-def save_raw_data(filename, measurements, insects, data, start_inds, stop_inds):
+def save_raw_data(filename, measurements, insects, data, start_inds, stop_inds, ds):
     for i, m_id in enumerate(measurements['Id'].tolist()):
         if start_inds[i] > stop_inds[i]:
             print('start lower than stop, continueing...')
@@ -135,7 +139,7 @@ def save_raw_data(filename, measurements, insects, data, start_inds, stop_inds):
                 if channels[c] in _insects['SegmentId'].tolist():
                     labels[start_inds[i]:stop_inds[i], c] = 1
 
-    save_data('', filename, data, labels)
+    save_data('', filename, data[::ds], labels[::ds])
     return
 
 
