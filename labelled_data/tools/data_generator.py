@@ -53,7 +53,6 @@ def create_labelled_data(blob, chunks=True, ds=5):
     :return:
     """
     os.makedirs(RAWDATA_LABELLED_PATH, exist_ok=True)
-    os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'zeros'), exist_ok=True)
     os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'insects'), exist_ok=True)
     os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'noise'), exist_ok=True)
 
@@ -104,13 +103,13 @@ def save_chunks(filename, measurements, insects, data, start_inds, stop_inds):
             print('start lower than stop, continueing...')
             continue
 
-        labels = np.zeros_like(event)
-
+        
         # process insect
         if m_id in insects['MeasurementId'].tolist():
             # Find insects
             _insects = insects[insects['MeasurementId'] == m_id]
             event = data[start_inds[i]:stop_inds[i], :]
+            labels = np.zeros_like(event)
             for c in range(0, 8):
                 if channels[c] in _insects['SegmentId'].tolist():
                     labels[:, c] = 1
