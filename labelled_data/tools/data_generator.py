@@ -86,6 +86,8 @@ def create_labelled_data(blob, chunks=True, ds=5):
 
     if (len(start_inds) == 0) & (len(stop_inds) == 0):
         return
+    if len(_meas) != len(start_inds):
+        return
 
     print('Saving files')
     filename = blob.replace('/', '_').split('.')[0] + '_ds_' + str(ds)
@@ -98,10 +100,6 @@ def create_labelled_data(blob, chunks=True, ds=5):
 
 
 def save_chunks(filename, measurements, insects, data, start_inds, stop_inds, ds):
-    print(len(start_inds))
-    print(len(stop_inds))
-    print(len(measurements))
-
     for i, m_id in enumerate(measurements['Id'].tolist()):
         if start_inds[i] > stop_inds[i]:
             print('start lower than stop, continueing...')
