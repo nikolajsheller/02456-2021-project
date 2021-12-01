@@ -22,28 +22,18 @@ def split_datasets(data, labels):
     return X_train, X_test, X_valid, y_train, y_test, y_valid
 
 
-def format_datasets(X_train, X_test, X_valid, y_train, y_test, y_valid):
-    X_train = np.reshape(X_train,(X_train.size,1)).astype(np.int32)
-    X_test = np.reshape(X_test,(X_test.size,1)).astype(np.int32)
-    X_valid = np.reshape(X_valid,(X_valid.size,1)).astype(np.int32)
-    y_train = np.reshape(y_train,(y_train.size,1)).astype(np.int16)
-    y_test = np.reshape(y_test,(y_test.size,1)).astype(np.int16)
-    y_valid = np.reshape(y_valid,(y_valid.size,1)).astype(np.int16)
+def format_dataset(X, y):
+    X = np.reshape(X,(X.size,1)).astype(np.int32)
+    y = np.reshape(y,(y.size,1)).astype(np.int16)
 
-    X_train_tensors = Variable(torch.Tensor(X_train))
-    X_valid_tensors = Variable(torch.Tensor(X_valid))
-    X_test_tensors = Variable(torch.Tensor(X_test))
+    X = Variable(torch.Tensor(X))
 
-    y_train_tensors = Variable(torch.Tensor(y_train))
-    y_valid_tensors = Variable(torch.Tensor(y_valid))
-    y_test_tensors = Variable(torch.Tensor(y_test))
+    y_final = Variable(torch.Tensor(y))
 
     # shape is (batch size, sequence length, input size)
-    X_train_tensors_final = torch.reshape(X_train_tensors,   (X_train_tensors.shape[0], 1, X_train_tensors.shape[1]))
-    X_valid_tensors_final = torch.reshape(X_valid_tensors,   (X_valid_tensors.shape[0], 1, X_valid_tensors.shape[1]))
-    X_test_tensors_final = torch.reshape(X_test_tensors,  (X_test_tensors.shape[0], 1, X_test_tensors.shape[1]))
+    X_final = torch.reshape(X,   (X.shape[0], 1, X.shape[1]))
 
-    return X_train_tensors_final, X_test_tensors_final, X_valid_tensors_final, y_train_tensors, y_test_tensors, y_valid_tensors
+    return X_final, y_final
 
 
 def get_chunk_files():
@@ -76,24 +66,24 @@ def split_files(files):
     return data_files, labels_files
 
 
-def data_loader(chunks=True):
+def data_loader(chunks=True, no_files=100):
     if chunks:
         data_files, labels_files = get_chunk_files()
     else:
         data_files, labels_files = get_raw_files()
+    if len(data_files) > no_files:
+        data_files = data_files[0:no_files]
+        labels_files = labels_files[0:no_files]
 
-    for f in range(0, len(data_files)):
-        data = np.load(data_files[f])[:,1]
-        labels = np.load(labels_files[f])[:,1]
+    X_train, X_test, X_valid, y_train, y_test, y_valid = split_datasets(data_files, labels_files)
 
-        X_train, X_test, X_valid, y_train, y_test, y_valid = split_datasets(data, labels)
-        X_train_tensors_final, X_test_tensors_final, X_valid_tensors_final, y_train_tensors, y_test_tensors, y_valid_tensors = format_datasets(X_train, X_test, X_valid, y_train, y_test, y_valid)
-        dict = {
-            'X_train': X_train_tensors_final,
-            'X_test': X_test_tensors_final,
-            'X_valid': X_valid_tensors_final,
-            'y_train': y_train_tensors,
-            'y_test': y_test_tensors,
-            'y_valid': y_valid_tensors
-        }
-        yield dict
+    return X_train, X_test, X_valid, y_train, y_test, y_valid
+
+
+def data_generator(data, labels):
+    for d in range(0, len(data)):
+        data_channel = np.load(data[d])[:,1]
+        label_channel = np.load(labels[d])[:,1]
+        data_format, label_format = format_dataset(data_channel, label_channel)
+
+        yield data_format, label_format
