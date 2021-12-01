@@ -25,13 +25,12 @@ def split_datasets(data, labels):
 def format_dataset(X, y):
     X = np.reshape(X,(X.size,1)).astype(np.int32)
     y = np.reshape(y,(y.size,1)).astype(np.int16)
+    X = torch.tensor(X,requires_grad=True, dtype=torch.float)
 
-    X = Variable(torch.Tensor(X))
-
-    y_final = Variable(torch.Tensor(y))
+    y_final = torch.tensor(y, dtype=torch.float)
 
     # shape is (batch size, sequence length, input size)
-    X_final = torch.reshape(X,   (X.shape[0], 1, X.shape[1]))
+    X_final = torch.reshape(X, (X.shape[0], 1, X.shape[1]))
 
     return X_final, y_final
 
@@ -82,8 +81,8 @@ def data_loader(chunks=True, no_files=100):
 
 def data_generator(data, labels):
     for d in range(0, len(data)):
-        data_channel = np.load(data[d])[:,1]
-        label_channel = np.load(labels[d])[:,1]
+        data_channel = np.load(data[d])[:,7]
+        label_channel = np.load(labels[d])[:,7]
         data_format, label_format = format_dataset(data_channel, label_channel)
 
         yield data_format, label_format

@@ -57,9 +57,10 @@ def create_labelled_data(blob, chunks=True, ds=5):
     os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'noise'), exist_ok=True)
 
     # Get data from DB
-    measurements = fp.dbquery('select * from measurement where sessionid=686').sort_values('TimeId')
+    measurements = fp.dbquery('select * from measurement where sessionid=1307').sort_values('TimeId')
     measurements = to_pdatime(measurements, delete=False)
-    insects = fp.get_insects(sessionid=686, all_segments=True)
+    insects = fp.get_insects(sessionid=1307, all_segments=True)
+    #features = fp.get_features(sessionid=1307, all_segments=True)
 
     # Get files from blob storage
     blob_mgr = BlobManager(configuration='rclone')
