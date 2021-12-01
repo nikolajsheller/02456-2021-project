@@ -52,8 +52,9 @@ def get_chunk_files():
 
     noise_files = os.listdir(os.path.join(RAWDATA_LABELLED_PATH, 'noise'))
     noise_files = [os.path.join(os.path.join(RAWDATA_LABELLED_PATH, 'noise'), file) for file in noise_files]
+    data_files, labels_files = split_files(noise_files + insect_files)
 
-    return noise_files + insect_files
+    return data_files, labels_files
 
 
 def get_raw_files():
