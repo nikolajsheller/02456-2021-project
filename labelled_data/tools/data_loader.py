@@ -58,13 +58,13 @@ def get_chunk_files():
 
 def get_raw_files():
     raw_files = os.listdir(RAWDATA_LABELLED_PATH)
-    raw_files = [os.path.join(os.path.join(RAWDATA_LABELLED_PATH, 'noise'), file) for file in raw_files]
+    raw_files = [os.path.join(RAWDATA_LABELLED_PATH, file) for file in raw_files]
     data_files, labels_files = split_files(raw_files)
     return data_files, labels_files
 
 
 def split_files(files):
-    files = random.shuffle(files)
+    random.shuffle(files)
     data_files = []
     labels_files = []
     for file in files:
