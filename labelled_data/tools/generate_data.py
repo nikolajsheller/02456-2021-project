@@ -1,6 +1,7 @@
 import os.path
 import pandas as pd
 
+from .load_data import tight_cut
 from .evex_scout import *
 
 print('if you have fpmodules < 2.10.13, use the import line below instead - check the code')
@@ -44,7 +45,20 @@ def get_seconds(event):
     return seconds
 
 
-def create_labelled_data(blob, chunks=True, ds=5):
+def get_insects_and_measurements():
+    measurements = fp.dbquery('select * from measurement where sessionid=1307').sort_values('TimeId')
+    measurements = to_pdatime(measurements, delete=False)
+    feat = fp.get_features(sessionid=1307, featureid=12)
+    feat = feat[(feat['WavelengthId'] == '810') & (feat['SegmentId'] == 4)]
+    feat = feat[feat['max'] > 30]
+    feat['MeasurementId'] = feat['MeasurementId'].astype(int)
+    insects = fp.get_insects(sessionid=1307, all_segments=True)
+    insects = insects[insects['MeasurementId'].isin(feat['MeasurementId'])]
+
+    return measurements, insects
+
+
+def create_labelled_data(blob, chunks=True, tight=True, ds=5):
     """
 
     :param blob: blob from storage
@@ -57,10 +71,7 @@ def create_labelled_data(blob, chunks=True, ds=5):
     os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'noise'), exist_ok=True)
 
     # Get data from DB
-    measurements = fp.dbquery('select * from measurement where sessionid=1307').sort_values('TimeId')
-    measurements = to_pdatime(measurements, delete=False)
-    insects = fp.get_insects(sessionid=1307, all_segments=True)
-    #features = fp.get_features(sessionid=1307, all_segments=True)
+    measurements, insects = get_insects_and_measurements()
 
     # Get files from blob storage
     blob_mgr = BlobManager(configuration='rclone')
@@ -89,6 +100,10 @@ def create_labelled_data(blob, chunks=True, ds=5):
         return
     if len(_meas) != len(start_inds):
         return
+
+    if tight:
+        for i in range(0, len(start_inds)):
+            start_inds[i], stop_inds[i] = tight_cut(data, start_inds[i], stop_inds[i])
 
     print('Saving files')
     filename = blob.replace('/', '_').split('.')[0] + '_ds_' + str(ds)
@@ -124,12 +139,11 @@ def save_chunks(filename, measurements, insects, data, start_inds, stop_inds, ds
 
 
 def save_raw_data(filename, measurements, insects, data, start_inds, stop_inds, ds):
+    labels = np.zeros_like(data)
     for i, m_id in enumerate(measurements['Id'].tolist()):
         if start_inds[i] > stop_inds[i]:
-            print('start lower than stop, continueing...')
+            print('start lower than stop, continuing...')
             continue
-
-        labels = np.zeros_like(data)
 
         if m_id in insects['MeasurementId'].tolist():
             _insects = insects[insects['MeasurementId'] == m_id]
@@ -149,3 +163,27 @@ def save_data(folder, filename, data, labels):
     with open(os.path.join(path, filename + '_labels.npy'), 'wb') as f:
         np.save(f, labels)
     return
+
+
+def tight_cut(data, start_inds, stop_inds):
+    start_index = None
+    stop_index = None
+    for j in range(start_inds, stop_inds):
+        if start_index is not None:
+            break
+        if (int(np.max(data[j:j + 100, 7])) - int(data[j, 7]) > 20) and start_index is None:
+            start_index = j
+
+    for j in range(stop_inds, start_inds, -1):
+        if stop_index is not None:
+            break
+        if (int(np.max(data[j - 100:j, 7])) - int(data[j, 7]) > 20) and stop_index is None:
+            stop_index = j
+    if stop_index is None:
+        stop_index = stop_inds
+    if start_index is None:
+        start_index = start_inds
+
+    if np.fabs(stop_index - start_index) > 20000:
+        return start_inds, stop_inds
+    return start_index, stop_index

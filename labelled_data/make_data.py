@@ -1,6 +1,6 @@
 from tools.constants import *
 from fpmodules import BlobManager
-from tools.data_generator import create_labelled_data
+from tools.generate_data import create_labelled_data
 import fpmodules as fp
 
 mac = 'dca6324634b1'
@@ -9,7 +9,7 @@ measurements = fp.dbquery('select * from measurement where sessionid=1307')
 dates = measurements['DateId'].sort_values().unique().tolist()
 delete_files = True
 
-for date in dates[1:2]:
+for date in dates[2:3]:
     blob_mgr = BlobManager(configuration='rclone')
     blob_list = blob_mgr.list_blobs(container='scouts', subdir=f"{mac}/{str(date)}/raw/")
     blob_list = [b for b in blob_list if b.endswith(".raw.gz")]

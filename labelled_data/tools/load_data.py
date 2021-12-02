@@ -1,15 +1,13 @@
 import numpy as np
-from torch.autograd import Variable
 import torch
 import random
-import os
 from .constants import *
 
 
 def split_datasets(data, labels):
     # 80 % for training, 10 % for validation, 10 % for testing
-    train_index = int(len(data)*0.8)
-    valid_index = train_index + int(len(data)*0.1)
+    train_index = int(len(data) * 0.8)
+    valid_index = train_index + int(len(data) * 0.1)
 
     X_train = data[0:train_index]
     X_test = data[train_index:valid_index]
@@ -23,9 +21,9 @@ def split_datasets(data, labels):
 
 
 def format_dataset(X, y):
-    X = np.reshape(X,(X.size,1)).astype(np.int32)
-    y = np.reshape(y,(y.size,1)).astype(np.int16)
-    X = torch.tensor(X,requires_grad=True, dtype=torch.float)
+    X = np.reshape(X, (X.size, 1)).astype(np.int32)
+    y = np.reshape(y, (y.size, 1)).astype(np.int16)
+    X = torch.tensor(X, requires_grad=True, dtype=torch.float)
 
     y_final = torch.tensor(y, dtype=torch.float)
 
@@ -81,8 +79,8 @@ def data_loader(chunks=True, no_files=100):
 
 def data_generator(data, labels):
     for d in range(0, len(data)):
-        data_channel = np.load(data[d])[:,7]
-        label_channel = np.load(labels[d])[:,7]
+        data_channel = np.load(data[d])[:, 7]
+        label_channel = np.load(labels[d])[:, 7]
         data_format, label_format = format_dataset(data_channel, label_channel)
 
         yield data_format, label_format
