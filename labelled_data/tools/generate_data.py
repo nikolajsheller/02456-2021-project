@@ -1,7 +1,6 @@
 import os.path
 import pandas as pd
 
-from .load_data import tight_cut
 from .evex_scout import *
 
 print('if you have fpmodules < 2.10.13, use the import line below instead - check the code')
