@@ -87,8 +87,8 @@ def create_labelled_data(blob, chunks=True, tight=True, ds=5):
     in_range = (measurements['Datetime'] >= raw_start) & (measurements['Datetime'] <= raw_end)
     _meas = measurements[in_range]
 
-    if len(_meas) == 0:
-        print('Found no measurements in range, continuing...')
+    if len(_meas) < 1:
+        print('Found less than 1 measurements in range, continuing...')
         return
     print(f'Found {len(_meas)} measurements')
 
@@ -151,7 +151,25 @@ def save_raw_data(filename, measurements, insects, data, start_inds, stop_inds, 
                 if channels[c] in _insects['SegmentId'].tolist():
                     labels[start_inds[i]:stop_inds[i], c] = 1
 
-    save_data('', filename, data[::ds], labels[::ds])
+    data = data[:,7]
+    data = data/np.linalg.norm(data)
+    labels = labels[:,7]
+    data = data[::ds]
+    mean = np.mean(data)
+    epsilon = mean*1.1
+    labels = labels[::ds]
+    for d in range(0, len(data), 10000):
+        if (d+10000) > len(data):
+            slice = data[d:]
+        else:
+            slice = data[d:d+10000]
+        if np.max(slice) < epsilon:
+            labels[d:d+10000] = 2
+
+    data = data[labels < 2]
+    labels = labels[labels < 2]
+    if len(data) > 0:
+        save_data('', filename, data, labels)
     return
 
 
