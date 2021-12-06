@@ -102,7 +102,7 @@ color = 'tab:red'
 ax2.set_ylabel('labelled', color=color)
 ax2.plot(labels_chunk, color=color)
 ax2.tick_params(axis='y', color=color)
-plt.show()
+#plt.show()
 
 # Transform and scale output
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
@@ -131,7 +131,7 @@ color = 'tab:red'
 ax2.set_ylabel('insect', color=color)
 ax2.plot(y, color=color)
 ax2.tick_params(axis='y', color=color)
-plt.show()
+#plt.show()
 
 # Define training and test data
 #first 200 for training
@@ -174,35 +174,46 @@ class LSTM1(nn.Module):
         self.n_linear = n_linear
 
         self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
-                          num_layers=num_layers, batch_first=True, bidirectional=False) #lstm
+                          num_layers=num_layers, batch_first=True, bidirectional=True) #lstm
         self.lstm_2 = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size,
                           num_layers=num_layers, batch_first=True, bidirectional=False) #lstm
-        self.fc_1 =  nn.Linear(hidden_size, n_linear) #fully connected 1
+        self.fc_1 =  nn.Linear(hidden_size*2, n_linear) #fully connected 1
         self.fc_2 =  nn.Linear(n_linear, n_linear) #fully connected 2
         self.fc = nn.Linear(n_linear, num_classes) #fully connected last layer
+        #self.fc = nn.Linear(hidden_size*2, num_classes) #fully connected last layer
 
         self.relu = nn.ReLU()
     
     def forward(self,x):
-        h_0 = get_variable(Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size))) #hidden state
-        c_0 = get_variable(Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size))) #internal state
+        h_0 = get_variable(Variable(torch.zeros(self.num_layers*2, x.size(0), self.hidden_size))) #hidden state
+        c_0 = get_variable(Variable(torch.zeros(self.num_layers*2, x.size(0), self.hidden_size))) #internal state
         # Propagate input through LSTM
-        output, (hn, cn) = self.lstm(x, (h_0, c_0)) #lstm with input, hidden, and internal state
-        hn = hn.view(-1, self.hidden_size) #reshaping the data for Dense layer next
-        out = self.relu(hn)
-        out = self.fc_1(out) #first Dense
+        #output, (hn, cn) = self.lstm(x, (h_0, c_0)) #lstm with input, hidden, and internal state
+
+        out, _ = self.lstm(x, (h_0, c_0))
+        #out = self.fc(out[:, -1, :])
+        
+        out = self.fc_1(out[:, -1, :])
         out = self.relu(out) #relu
         out = self.fc_2(out) #first Dense
         out = self.relu(out) #relu
-        out = self.fc(out) #Final Output
+        out = self.fc(out) #Final Output        
+
+        #hn = hn.view(-1, self.hidden_size) #reshaping the data for Dense layer next
+        #out = self.relu(hn)
+        #out = self.fc_1(out) #first Dense
+        #out = self.relu(out) #relu
+        #out = self.fc_2(out) #first Dense
+        #out = self.relu(out) #relu
+        #out = self.fc(out) #Final Output
         return out
 
 # Hyper parameters
 num_epochs = 1000 #1000 epochs
 learning_rate = 0.001 #0.001 lr
 input_size = 1 #number of features
-hidden_size = 400 #number of features in hidden state
-num_layers = 1 #number of stacked lstm layers
+hidden_size = 200 #number of features in hidden state
+num_layers = 3 #number of stacked lstm layers
 num_classes = 1 #number of output classes
 
 #  Instantiate the class LSTM1 object
@@ -268,15 +279,38 @@ plt.plot(dataY_plot, label='Actual Data') #actual plot
 plt.plot(data_predict, label='Predicted Data') #predicted plot
 plt.title('Time-Series Prediction')
 plt.legend()
-plt.show()
+#plt.show()
+
+font = {'family' : 'normal','weight' : 'normal','size'   : 16}
+plt.rc('font', **font)
 
 #data_predict = mm.inverse_transform(data_predict) #reverse transformation
 #dataY_plot = mm.inverse_transform(dataY_plot)
-plt.figure(figsize=(10,6)) #plotting
-plt.axvline(x=n_train, c='r', linestyle='--') #size of the training set
-plt.plot(X_ss, label='Sensor') #actual plot
-plt.plot(dataY_plot, label='Actual Data') #actual plot
-plt.plot(data_predict, label='Predicted Data') #predicted plot
-plt.title('Time-Series Prediction')
-plt.legend()
+#plt.figure(figsize=(10,6)) #plotting
+#plt.axvline(x=n_train, c='r', linestyle='--') #size of the training set
+fig, ax1 = plt.subplots()
+ax1.plot(X_ss, label='Sensor data', color='green')
+ax1.set_ylabel('sensor')
+ax1.legend(loc='upper left')
+ax1.set_xlabel('sample')
+ax2 = ax1.twinx()
+ax2.plot(dataY_plot, label='Target output', color='blue')
+ax2.plot(data_predict, label='Predicted output', color='red')
+ax2.set_ylabel('insect probability')
+#ax2.title('Time-Series Prediction')
+ax2.legend(loc='upper right')
 plt.show()
+
+
+# plot training data
+#fig, ax1 = plt.subplots()
+#color = 'tab:blue'
+#ax1.set_ylabel('sensor', color=color)
+#ax1.plot(x, color=color)
+#ax1.tick_params(axis='y', color=color)
+#ax2 = ax1.twinx()
+#color = 'tab:red'
+#ax2.set_ylabel('insect', color=color)
+#ax2.plot(y, color=color)
+#ax2.tick_params(axis='y', color=color)
+#plt.show()
