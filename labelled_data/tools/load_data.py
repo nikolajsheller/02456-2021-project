@@ -21,7 +21,7 @@ def split_datasets(data, labels):
 
 
 def format_dataset(X, y):
-    X = np.reshape(X, (X.size, 1)).astype(np.int32)
+    X = np.reshape(X, (X.size, 1)).astype(np.float64)
     y = np.reshape(y, (y.size, 1)).astype(np.int16)
     X = torch.tensor(X, requires_grad=True, dtype=torch.float)
 
@@ -79,8 +79,8 @@ def data_loader(chunks=True, no_files=100):
 
 def data_generator(data, labels):
     for d in range(0, len(data)):
-        data_channel = np.load(data[d])[:, 7]
-        label_channel = np.load(labels[d])[:, 7]
+        data_channel = np.load(data[d])
+        label_channel = np.load(labels[d])
         data_format, label_format = format_dataset(data_channel, label_channel)
 
         yield data_format, label_format

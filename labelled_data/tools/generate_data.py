@@ -44,20 +44,20 @@ def get_seconds(event):
     return seconds
 
 
-def get_insects_and_measurements():
-    measurements = fp.dbquery('select * from measurement where sessionid=1307').sort_values('TimeId')
+def get_insects_and_measurements(max_val):
+    measurements = fp.dbquery('select * from measurement where sessionid=686').sort_values('TimeId')
     measurements = to_pdatime(measurements, delete=False)
-    feat = fp.get_features(sessionid=1307, featureid=12)
+    feat = fp.get_features(sessionid=686, featureid=12)
     feat = feat[(feat['WavelengthId'] == '810') & (feat['SegmentId'] == 4)]
-    feat = feat[feat['max'] > 30]
+    feat = feat[feat['max'] > max_val]
     feat['MeasurementId'] = feat['MeasurementId'].astype(int)
-    insects = fp.get_insects(sessionid=1307, all_segments=True)
+    insects = fp.get_insects(sessionid=686, all_segments=True)
     insects = insects[insects['MeasurementId'].isin(feat['MeasurementId'])]
 
     return measurements, insects
 
 
-def create_labelled_data(blob, chunks=True, tight=True, ds=5):
+def create_labelled_data(blob, chunks=True, tight=True, ds=5,max_val=0,segment=4, channel=7):
     """
 
     :param blob: blob from storage
@@ -66,11 +66,11 @@ def create_labelled_data(blob, chunks=True, tight=True, ds=5):
     :return:
     """
     os.makedirs(RAWDATA_LABELLED_PATH, exist_ok=True)
-    os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'insects'), exist_ok=True)
-    os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'noise'), exist_ok=True)
+    #os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'insects'), exist_ok=True)
+    #os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'noise'), exist_ok=True)
 
     # Get data from DB
-    measurements, insects = get_insects_and_measurements()
+    measurements, insects = get_insects_and_measurements(max_val)
 
     # Get files from blob storage
     blob_mgr = BlobManager(configuration='rclone')
@@ -86,9 +86,10 @@ def create_labelled_data(blob, chunks=True, tight=True, ds=5):
 
     in_range = (measurements['Datetime'] >= raw_start) & (measurements['Datetime'] <= raw_end)
     _meas = measurements[in_range]
+    _meas = _meas.sort_values(['Datetime','Id'])
 
     if len(_meas) < 1:
-        print('Found less than 1 measurements in range, continuing...')
+        print('Found 0 measurements in range, continuing...')
         return
     print(f'Found {len(_meas)} measurements')
 
@@ -109,7 +110,7 @@ def create_labelled_data(blob, chunks=True, tight=True, ds=5):
     if chunks:
         save_chunks(filename, _meas, insects, data, start_inds, stop_inds, ds=ds)
     else:
-        save_raw_data(filename, _meas, insects, data, start_inds, stop_inds, ds=ds)
+        save_raw_data(filename, _meas, insects, data, start_inds, stop_inds, ds=ds, segment=segment, channel=channel)
 
     return
 
@@ -137,34 +138,32 @@ def save_chunks(filename, measurements, insects, data, start_inds, stop_inds, ds
             save_data('noise', filename, event[::ds], labels[::ds])
 
 
-def save_raw_data(filename, measurements, insects, data, start_inds, stop_inds, ds):
+def save_raw_data(filename, measurements, insects, data, start_inds, stop_inds, ds, segment, channel):
+    data = data[:, channel]
     labels = np.zeros_like(data)
-    for i, m_id in enumerate(measurements['Id'].tolist()):
-        if start_inds[i] > stop_inds[i]:
-            print('start lower than stop, continuing...')
-            continue
 
-        if m_id in insects['MeasurementId'].tolist():
-            _insects = insects[insects['MeasurementId'] == m_id]
+    for i, dt in enumerate(measurements['Datetime'].tolist()):
+        insect_measurement = insects[(insects['Datetime'] == dt) & (insects['SegmentId'] == segment)]
 
-            for c in range(0, 8):
-                if channels[c] in _insects['SegmentId'].tolist():
-                    labels[start_inds[i]:stop_inds[i], c] = 1
+        if len(insect_measurement['MeasurementId'].unique()) > 1:
+            labels[start_inds[i]:stop_inds[i]] = 2
 
-    data = data[:,7]
+        if len(insect_measurement) > 0:
+            labels[start_inds[i]:stop_inds[i]] = 1
+
     data = data/np.linalg.norm(data)
-    labels = labels[:,7]
     data = data[::ds]
+
     mean = np.mean(data)
     epsilon = mean*1.1
     labels = labels[::ds]
-    for d in range(0, len(data), 10000):
-        if (d+10000) > len(data):
+    for d in range(0, len(data), 5000):
+        if (d+5000) > len(data):
             slice = data[d:]
         else:
-            slice = data[d:d+10000]
+            slice = data[d:d+5000]
         if np.max(slice) < epsilon:
-            labels[d:d+10000] = 2
+            labels[d:d+5000] = 2
 
     data = data[labels < 2]
     labels = labels[labels < 2]
@@ -200,7 +199,6 @@ def tight_cut(data, start_inds, stop_inds):
         stop_index = stop_inds
     if start_index is None:
         start_index = start_inds
-
     if np.fabs(stop_index - start_index) > 20000:
         return start_inds, stop_inds
     return start_index, stop_index
