@@ -77,10 +77,17 @@ def data_loader(chunks=True, no_files=100):
     return X_train, X_test, X_valid, y_train, y_test, y_valid
 
 
-def data_generator(data, labels):
+def data_generator(data, labels, sequence_length=1):
     for d in range(0, len(data)):
         data_channel = np.load(data[d])
         label_channel = np.load(labels[d])
         data_format, label_format = format_dataset(data_channel, label_channel)
 
+        if sequence_length > 1:
+            left_over = data_format.shape[0]%sequence_length
+            no_batches = int((data_format.shape[0]-left_over)/sequence_length)
+            data_length = data_format.shape[0]
+            data_format = torch.reshape(data_format[:data_length-left_over,:,:], (no_batches, sequence_length, 1))
+            label_format = torch.reshape(label_format[:data_length-left_over,:], (no_batches*sequence_length,1))
+            
         yield data_format, label_format

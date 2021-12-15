@@ -10,7 +10,7 @@ measurements = fp.dbquery('select * from measurement where sessionid=686')
 dates = measurements['DateId'].sort_values().unique().tolist()
 delete_files = True
 
-for date in dates[0:1]:
+for date in dates[0:7]:
     blob_mgr = BlobManager(configuration='rclone')
     blob_list = blob_mgr.list_blobs(container='scouts', subdir=f"{mac}/{str(date)}/raw/")
     blob_list = [b for b in blob_list if b.endswith(".raw.gz")]
@@ -19,7 +19,7 @@ for date in dates[0:1]:
     for b, blob in enumerate(blob_list):
         dt = blob.split('/')[-1].split('.')[0]
         hour = datetime.datetime.strptime(dt,'%Y%m%dT%H%M%SZ').hour
-        if hour < 16 or hour > 18:
+        if hour < 8 or hour > 20:
             continue
         text_file = os.path.join(RAWDATA_CACHE_PATH, blob.replace('/', '_').split('.')[0] + '.txt')
         # if we ran over the file before, don't do it again. If you want to run it anyway, delete the text file.
