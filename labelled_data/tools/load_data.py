@@ -23,7 +23,7 @@ def split_datasets(data, labels):
 def format_dataset(X, y):
     X = np.reshape(X, (X.size, 1)).astype(np.float64)
     y = np.reshape(y, (y.size, 1)).astype(np.int16)
-    X = torch.tensor(X, requires_grad=True, dtype=torch.float)
+    X = torch.tensor(X, dtype=torch.float)
 
     y_final = torch.tensor(y, dtype=torch.float)
 
@@ -84,10 +84,10 @@ def data_generator(data, labels, sequence_length=1):
         data_format, label_format = format_dataset(data_channel, label_channel)
 
         if sequence_length > 1:
-            left_over = data_format.shape[0]%sequence_length
-            no_batches = int((data_format.shape[0]-left_over)/sequence_length)
+            left_over = data_format.shape[0] % sequence_length
+            no_batches = int((data_format.shape[0] - left_over) / sequence_length)
             data_length = data_format.shape[0]
-            data_format = torch.reshape(data_format[:data_length-left_over,:,:], (no_batches, sequence_length, 1))
-            label_format = torch.reshape(label_format[:data_length-left_over,:], (no_batches*sequence_length,1))
-            
+            data_format = torch.reshape(data_format[:data_length - left_over, :, :], (no_batches, sequence_length, 1))
+            label_format = torch.reshape(label_format[:data_length - left_over, :], (no_batches * sequence_length, 1))
+
         yield data_format, label_format

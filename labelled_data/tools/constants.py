@@ -1,7 +1,8 @@
 import os
-import fpmodules.tools as tools
-from fpmodules.tools.constants import EVENTS_CACHE_PATH
+
+EVENTS_CACHE_PATH = os.path.expanduser("~/EventCache")
 RAWDATA_CACHE_PATH = os.path.join(EVENTS_CACHE_PATH, 'RawData')
+#RAWDATA_LABELLED_PATH = '/content/gdrive/MyDrive/Colab Notebooks/project/data'
 RAWDATA_LABELLED_PATH = os.path.join(EVENTS_CACHE_PATH, 'RawLabelledData')
 
 SNR = 10
@@ -15,4 +16,4 @@ saturation_threshold = 30000
 
 # {1: "C", 2: "B", 3: "A", 4: "D"}
 channels = [1, 1, 2, 2, 3, 3, 4, 4]
-colors = tools.get_instrument_info()['Scout']['cmap']
+colors = ['#0000F1', '#1E90FF', '#008040', '#20D100', '#F40000', '#F78528', '#481F01', '#957439']

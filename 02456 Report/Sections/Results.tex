@@ -1,0 +1,61 @@
+\section{Results and Discussion}
+After experimenting with different layers, such as LSTM and linear, it was found that a combination of a layered LSTM and a deep linear network provided the best results on different qualifiers. The evaluation was based on speed and quality since, given enough time, the networks would reach similar accuracies. MSE and Binary loss functions combined with an Adam optimizer provided similar results, albeit the combination of Binary loss and Adam was used since it is preferred for similar binary classification problems\cite{https://doi.org/10.1002/for.2585}. 
+
+
+\subsection{Tuning of model}
+
+The tuning was performed in two separate steps in order to minimize computational time. The first step was to tune learning rate and data formatting, and the second step was to tune neural network size and dropout rates. The full dataset was divided into training set ($80 \:  \%$), validation set ($10 \:  \%$), and test set ($10 \:  \%$).
+The tuning of the learning rate and data formatting is in Figure \ref{fig:tune-data} and tuning of the neural network size and dropout rates are in Figure \ref{fig:tune-network}. The accuracies and loss were compared between the different hyperparameters. Furthermore, computational time was the final decider if two parameters were equally sufficient for the network quality. 
+
+The threshold to determine if the output of the model is an insect was determined by the output values of the test set, which is in Figure \ref{fig:threshold}. The output values between 0 and 1 were well separated, and a threshold of 0.5 was used. 
+
+
+\begin{figure*}[htb]
+  \centering
+  \includegraphics[width=0.8\textwidth]{Figures/data_tuning}
+  \caption{Tuning of the learning rate and data parameters. There is a clear tendency that with a lower number of batches and lower sequence length, the training accuracy is high after 40 epochs. The best parameters were found to be a learning rate of 0.0002, 100 batches, and a sequence length of 10.}
+  \label{fig:tune-data}
+\end{figure*}
+
+\begin{figure*}[htb]
+  \centering
+  \includegraphics[width=\textwidth]{Figures/model_tuning}
+  \caption{Tuning of the model parameters.}
+  \label{fig:tune-network}
+\end{figure*}
+
+\begin{figure}[htb]
+\begin{minipage}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=6.0cm]{Figures/predicted_labels}
+\end{minipage}
+\caption{Predicted labels for the validation set. The values are very well seperated, and therefore a threshold of 0.5 is used to determine whether the predicted data is an insect.}
+\label{fig:threshold}
+\end{figure}
+
+\subsection{Model results}
+The accuracy and loss of the training and validation set are in Figure \ref{fig:acc_loss}. An early stopping with patience of 5 on the validation loss was used, meaning that if there is no improvement in the validation loss for 5 epochs, the training will end to prevent overfitting. The test dataset was used to find a model accuracy of $96.1 \: \%$. In Figure 5, an example of a prediction from the model is shown. In the right part of the figure, the model predicts the same as the labelled data. However, the model predicts an insect on the left side of the figure, where the labelled data does not. In this case, it is seen as a fault in the labelled data, and that the model can predict better than expected.
+
+
+\begin{figure}[htb]
+\begin{minipage}[b]{0.48\textwidth}
+  \centering
+  \includegraphics[width=7.5cm]{Figures/loss}
+  \centerline{(a) Training and validation loss.}
+\end{minipage}
+\begin{minipage}[b]{.48\textwidth}
+  \centering
+  \centerline{\includegraphics[width=7.5cm]{Figures/acc}}
+  \centerline{(b) Training and validation accuracy}
+\end{minipage}
+\caption{Loss and accuracy for validation and training sets for the model.}
+\label{fig:acc_loss}
+\end{figure}
+
+\begin{figure*}[htb]
+  \centering
+  \includegraphics[width=\textwidth]{Figures/insect_results}
+  \caption{Example of a model prediction. The striped line is the pre-labelled data, the line is the insect data, and the points are the model prediction. These cases were chosen to show one successful prediction (right) and another prediction (left). In the left-most prediction, where it is predicted as an insect, the labelled data states no insect. It looks like there is an insect to the human eye, even though the labelled data does not agree. This example was chosen to show that there has been an improvement in labelling the data as insect or not an insect, since the model prediction fits the data better.}
+  \label{fig:predict}
+\end{figure*}
+
