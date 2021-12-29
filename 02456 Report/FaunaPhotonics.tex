@@ -63,28 +63,28 @@
 \maketitle
 %
 \begin{abstract}
-Automated, non-destructive insect detection in fields can improve pest control and spare beneficial insects in crops [2]. 
-The FaunaPhotonics insect sensor [1], the Volito, can detect insects by infrared light. 
-The aim of the machine learning experiments is to classify signals as insects or not insects.
+The FaunaPhotonics insect sensor, can detect insects by oberserving near-infrared backscattered light. 
+The aim of this project is to classify signals as insects or not insects.
 \end{abstract}
 %
 \begin{keywords}
-insects, detection, non-destructive, infrared, spectroscopy
+insects, detection, non-destructive, unsupervised, near-infrared
 \end{keywords}
 %
 \section{Introduction}
 \label{sec:intro}
 
-Automated, non-destructive insect counting in fields can be used to improve pest control and spare useful insects in crops. The FaunaPhotonics insect sensor, the Volito, can detect insects by infrared spectroscopy. 
+Automated, non-destructive insect detection in fields can improve pest control and spare beneficial insects in crops\cite{Kirkeby2021}. The FaunaPhotonics insect sensor\cite{rydhmer2021automating}, the Volito, can detect insects by near-infrared (NIR) backscatter. 
 The data provided by a Volito can be classified as insects, or not insects. 
 
-Automated, non-destructive insect counting in fields can be used to improve pest control and spare useful insects in crops. The challenge is to identify and classify insects reliably and quickly.
+The challenge is to do so reliably and quickly.
 
-Sensor uses IR + camera
-Sees reflections off carapace and wings
-Reminicent of audio signal?
-Needs to be very noise robust on mobile
-Need to see pest vs beneficial
+The Volito emits NIR and detectes backscatter using a charge-coupled device (CCD) sensor. NIR backscatters off an insect's carapace and wings as specular and diffuse reflections.
+The reflections and wingbeat frequency (WBF) produce a sigunature of the inscect, that a deep neural network can be trained to identify and classify.
+The CCD is sampled at $\sim$20KHz and produces a waveform when an insect traverses the probe volume, that is very similar to an audio signal a given insect produces, when flying. 
+For a farmer to map insect prevalence an a field, the sensor must to be mounted on a moving platform, e.g. a tractor or spraying boom. When the sensor is in motion, significant noise is introduced in the acquired signal, e.g. from equipment vibration, crops traversing the proble volume etc.
+The classifiaction of insects need to be real-time such that the spraying boom can spray detected insects, while holding off in areas without activity.
+This requires that our classification network be very robust to e.g. noise, rapid changes in baseline and vibration, while classifying real-time.
 
 
 \input{Sections/Datasets}
