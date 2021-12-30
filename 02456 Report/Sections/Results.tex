@@ -1,13 +1,20 @@
-\section{Results and Discussion}
-After experimenting with different layers, such as LSTM and linear, it was found that a combination of a layered LSTM and a deep linear network provided the best results on different qualifiers. The evaluation was based on speed and quality since, given enough time, the networks would reach similar accuracies. MSE and Binary loss functions combined with an Adam optimizer provided similar results, albeit the combination of Binary loss and Adam was used since it is preferred for similar binary classification problems\cite{https://doi.org/10.1002/for.2585}. 
+\section{Results and Discussion}\label{sec:results-and-discussion}
+After experimenting with different layers, such as LSTM and linear, it was found that a combination of a layered LSTM and a deep linear network provided the best results on different qualifiers.
+The evaluation was based on speed and quality since, given enough time, the networks would reach similar accuracies.
+MSE and Binary loss functions combined with an Adam optimizer provided similar results, albeit the combination of Binary loss and Adam was used since it is preferred for similar binary classification problems\cite{https://doi.org/10.1002/for.2585}.
 
 
-\subsection{Tuning of model}
+\subsection{Tuning of model}\label{subsec:tuning-of-model}
 
-The tuning was performed in two separate steps in order to minimize computational time. The first step was to tune learning rate and data formatting, and the second step was to tune neural network size and dropout rates. The full dataset was divided into training set ($80 \:  \%$), validation set ($10 \:  \%$), and test set ($10 \:  \%$).
-The tuning of the learning rate and data formatting is in Figure \ref{fig:tune-data} and tuning of the neural network size and dropout rates are in Figure \ref{fig:tune-network}. The accuracies and loss were compared between the different hyperparameters. Furthermore, computational time was the final decider if two parameters were equally sufficient for the network quality. 
+The tuning was performed in two separate steps in order to minimize computational time.
+The first step was to tune learning rate and data formatting, and the second step was to tune neural network size and dropout rates.
+The full dataset was divided into training set ($80 \:  \%$), validation set ($10 \:  \%$), and test set ($10 \:  \%$).
+The tuning of the learning rate and data formatting is in Figure~\ref{fig:tune-data} and tuning of the neural network size and dropout rates are in Figure~\ref{fig:tune-network}.
+The accuracies and loss were compared between the different hyperparameters.
+Furthermore, computational time was the final decider if two parameters were equally sufficient for the network quality.
 
-The threshold to determine if the output of the model is an insect was determined by the output values of the test set, which is in Figure \ref{fig:threshold}. The output values between 0 and 1 were well separated, and a threshold of 0.5 was used. 
+The threshold to determine if the output of the model is an insect was determined by the output values of the test set, which is in Figure~\ref{fig:threshold}.
+The output values between 0 and 1 were well separated, and a threshold of 0.5 was used.
 
 
 \begin{figure*}[htb]
@@ -34,7 +41,13 @@ The threshold to determine if the output of the model is an insect was determine
 \end{figure}
 
 \subsection{Model results}
-The accuracy and loss of the training and validation set are in Figure \ref{fig:acc_loss}. An early stopping with patience of 5 on the validation loss was used, meaning that if there is no improvement in the validation loss for 5 epochs, the training will end to prevent overfitting. The test dataset was used to find a model accuracy of $96.1 \: \%$. In Figure 5, an example of a prediction from the model is shown. In the right part of the figure, the model predicts the same as the labelled data. However, the model predicts an insect on the left side of the figure, where the labelled data does not. In this case, it is seen as a fault in the labelled data, and that the model can predict better than expected.
+The accuracy and loss of the training and validation set are in Figure~\ref{fig:acc_loss}.
+An early stopping with patience of 5 on the validation loss was used, meaning that if there is no improvement in the validation loss for 5 epochs, the training will end to prevent overfitting.
+The test dataset was used to find a model accuracy of $96.1 \: \%$.
+In Figure 5, an example of a prediction from the model is shown.
+In the right part of the figure, the model predicts the same as the labelled data.
+However, the model predicts an insect on the left side of the figure, where the labelled data does not.
+In this case, it is seen as a fault in the labelled data, and that the model can predict better than expected.
 
 
 \begin{figure}[htb]
