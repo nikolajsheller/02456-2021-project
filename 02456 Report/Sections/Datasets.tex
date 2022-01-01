@@ -1,13 +1,19 @@
 \section{Data preparation}\label{sec:data-preparation}
 
 The raw data format of ten-minute data files with a sampling rate of $\sim 20$ kHz, provides a high resolution in the time dimension.
-However, the dimensional accuracy of the data provides a challenge when training the neural network; hence, the data were downsampled by a factor of 10.
+However, the dimensional accuracy of the data provides a challenge when training the neural network;
+hence, the data were downsampled by a factor of 10.
 A honeybee has a wing beat frequency of $234 \pm 13.9$ Hz\cite{10.1242/jeb.154609}; therefore, a sampling rate of 2 kHz is a resolution well above the Nyquist rate, and sufficient to discover honeybees.
 For ten minutes, there are on average five honeybee flights in this experiment, giving a unbalance of the data since about $95 \:  \%$ will be labelled as not honeybees or negative, and about $5 \:  \%$ will be labelled as honeybees.
 After experimenting with weighting the loss function to adjust the unbalanced dataset, a better solution was to exclude more negative data points.
-The exclusion of negative data is as follows; if during 1000 data points, there has not been a divergence from the average of at least $10 \: \%$, exclude the period.
+The exclusion of negative data is as follows;
+if during 1000 data points, there has not been a divergence from the average of at least $10 \: \%$, exclude the period.
 In short, it will exclude periods in the data where there is mostly just a 'dead' signal.
 In order to have a tight window where the honeybee event is taking place, hence not including any flat signal, it was chosen to adjust the labelled data values, such that there needed at least a difference of 20 intensity in a window of 100 downsampled data points.
 The data can have different baselines, depending on the background light in the experiment, but the relative magnitude remains the same.
 Therefore, the data was normalized in ten-minute sequences to eliminate the baseline.
+Labelling of data has been done using an algorithmic approach that has unknown sensitivity and high specificity.
+This means that data that has been labelled as being an insect, is with high probability an insect, but that not all insect data has been classified as insect data.
+Our network may therefore detect insects where the labelled data does not show an insect is present, assuming our network has generalized correctly.
+Our network may outperform the labelling algorthm.
 
