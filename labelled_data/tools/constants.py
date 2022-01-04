@@ -2,7 +2,6 @@ import os
 
 EVENTS_CACHE_PATH = os.path.expanduser("~/EventCache")
 RAWDATA_CACHE_PATH = os.path.join(EVENTS_CACHE_PATH, 'RawData')
-#RAWDATA_LABELLED_PATH = '/content/gdrive/MyDrive/Colab Notebooks/project/data'
 RAWDATA_LABELLED_PATH = os.path.join(EVENTS_CACHE_PATH, 'RawLabelledData')
 
 SNR = 10

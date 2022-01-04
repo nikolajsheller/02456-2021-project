@@ -26,7 +26,7 @@ for date in dates[0:7]:
         if os.path.exists(text_file) and delete_files:
             continue
 
-        create_labelled_data(blob, chunks=False, ds=10, tight=True, max_val=0)
+        create_labelled_data(blob, ds=10, tight=True, max_val=0)
 
         if delete_files:
             os.remove(os.path.join(RAWDATA_CACHE_PATH, blob.replace('/', '_').split('.')[0] + '.raw.gz'))
