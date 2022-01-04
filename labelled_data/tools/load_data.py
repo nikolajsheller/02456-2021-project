@@ -63,11 +63,8 @@ def split_files(files):
     return data_files, labels_files
 
 
-def data_loader(chunks=True, no_files=100):
-    if chunks:
-        data_files, labels_files = get_chunk_files()
-    else:
-        data_files, labels_files = get_raw_files()
+def data_loader(no_files=100):
+    data_files, labels_files = get_raw_files()
     if len(data_files) > no_files:
         data_files = data_files[0:no_files]
         labels_files = labels_files[0:no_files]
@@ -90,4 +87,4 @@ def data_generator(data, labels, sequence_length=1):
             data_format = torch.reshape(data_format[:data_length - left_over, :, :], (no_batches, sequence_length, 1))
             label_format = torch.reshape(label_format[:data_length - left_over, :], (no_batches * sequence_length, 1))
 
-        yield data_format, label_format
+        yield data_format*1000, label_format

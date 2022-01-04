@@ -1,11 +1,11 @@
 import os.path
 import pandas as pd
 
+# Internal FaunaPhotonics module - must not be shared
 from .evex_scout import *
 
+# Internal FaunaPhotonics module - must not be shared
 print('if you have fpmodules < 2.10.13, use the import line below instead - check the code')
-# from fpmodules.plotting import load_data_from_files
-
 from fpmodules.fpio.raw_data import load_data_from_files
 from fpmodules import BlobManager
 from fpmodules.tools.dbtools import to_pdatime
@@ -57,17 +57,14 @@ def get_insects_and_measurements(max_val):
     return measurements, insects
 
 
-def create_labelled_data(blob, chunks=True, tight=True, ds=5,max_val=0,segment=4, channel=7):
+def create_labelled_data(blob, tight=True, ds=5,max_val=0,segment=4, channel=7):
     """
 
     :param blob: blob from storage
-    :param chunks: if True save as events, if False save as 10 minute files
     :param ds: downsample
     :return:
     """
     os.makedirs(RAWDATA_LABELLED_PATH, exist_ok=True)
-    #os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'insects'), exist_ok=True)
-    #os.makedirs(os.path.join(RAWDATA_LABELLED_PATH, 'noise'), exist_ok=True)
 
     # Get data from DB
     measurements, insects = get_insects_and_measurements(max_val)
@@ -107,35 +104,9 @@ def create_labelled_data(blob, chunks=True, tight=True, ds=5,max_val=0,segment=4
 
     print('Saving files')
     filename = blob.replace('/', '_').split('.')[0] + '_ds_' + str(ds)
-    if chunks:
-        save_chunks(filename, _meas, insects, data, start_inds, stop_inds, ds=ds)
-    else:
-        save_raw_data(filename, _meas, insects, data, start_inds, stop_inds, ds=ds, segment=segment, channel=channel)
+    save_raw_data(filename, _meas, insects, data, start_inds, stop_inds, ds=ds, segment=segment, channel=channel)
 
     return
-
-
-def save_chunks(filename, measurements, insects, data, start_inds, stop_inds, ds):
-    for i, m_id in enumerate(measurements['Id'].tolist()):
-        if start_inds[i] > stop_inds[i]:
-            print('start lower than stop, continueing...')
-            continue
-        event = data[start_inds[i]:stop_inds[i], :]
-        labels = np.zeros_like(event)
-        # process insect
-        if m_id in insects['MeasurementId'].tolist():
-            # Find insects
-            _insects = insects[insects['MeasurementId'] == m_id]
-            for c in range(0, 8):
-                if channels[c] in _insects['SegmentId'].tolist():
-                    labels[:, c] = 1
-
-            # save insect
-            save_data('insects', filename, event[::ds], labels[::ds])
-
-        # save noise
-        else:
-            save_data('noise', filename, event[::ds], labels[::ds])
 
 
 def save_raw_data(filename, measurements, insects, data, start_inds, stop_inds, ds, segment, channel):
